@@ -54,6 +54,12 @@ public class PFXAlertCard extends VBox {
         HBox.setHgrow(this.description, Priority.ALWAYS);
         getChildren().addAll(this.titleLabel, this.description, read);
 
+        read.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                isRead = true;
+            }
+        });
     }
 
     public String getTitle() {
