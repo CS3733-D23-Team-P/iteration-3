@@ -499,7 +499,7 @@ BEGIN
       uuid bigint DEFAULT nextval('alerts_id_seq') PRIMARY KEY,
       alertTitle varchar,
       description varchar,
-      readStatus null
+      readStatus varchar NOT NULL
     );
     ALTER SEQUENCE alerts_id_seq OWNED BY alerts.uuid;
   END IF;

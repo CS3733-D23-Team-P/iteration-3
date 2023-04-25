@@ -11,5 +11,10 @@ public class Alert {
     private Long uuid;
     private String alertTitle;
     private String description;
-    private Boolean readStatus;
+    private ReadStatus readStatus;
+
+    public enum ReadStatus {
+        READ,
+        UNREAD
+    }
 }

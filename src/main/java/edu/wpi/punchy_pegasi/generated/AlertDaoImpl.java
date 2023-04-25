@@ -34,7 +34,7 @@ public class AlertDaoImpl implements IDao<java.lang.Long, Alert, Alert.Field> {
                     rs.getObject("uuid", java.lang.Long.class),
                     rs.getObject("alertTitle", java.lang.String.class),
                     rs.getObject("description", java.lang.String.class),
-                    rs.getObject("readStatus", java.lang.Boolean.class));
+                    edu.wpi.punchy_pegasi.schema.Alert.ReadStatus.valueOf(rs.getString("readStatus")));
             return Optional.ofNullable(req);
         } catch (PdbController.DatabaseException | SQLException e) {
             log.error("", e);
@@ -56,7 +56,7 @@ public class AlertDaoImpl implements IDao<java.lang.Long, Alert, Alert.Field> {
                     rs.getObject("uuid", java.lang.Long.class),
                     rs.getObject("alertTitle", java.lang.String.class),
                     rs.getObject("description", java.lang.String.class),
-                    rs.getObject("readStatus", java.lang.Boolean.class));
+                    edu.wpi.punchy_pegasi.schema.Alert.ReadStatus.valueOf(rs.getString("readStatus")));
                 if (req != null)
                     map.put(req.getUuid(), req);
             }
@@ -75,7 +75,7 @@ public class AlertDaoImpl implements IDao<java.lang.Long, Alert, Alert.Field> {
                     rs.getObject("uuid", java.lang.Long.class),
                     rs.getObject("alertTitle", java.lang.String.class),
                     rs.getObject("description", java.lang.String.class),
-                    rs.getObject("readStatus", java.lang.Boolean.class));
+                    edu.wpi.punchy_pegasi.schema.Alert.ReadStatus.valueOf(rs.getString("readStatus")));
                 if (req != null)
                     map.put(req.getUuid(), req);
             }

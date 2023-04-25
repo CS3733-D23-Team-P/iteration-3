@@ -58,7 +58,7 @@ public class AlertCachedDaoImpl implements IDao<java.lang.Long, Alert, Alert.Fie
                     rs.getObject("uuid", java.lang.Long.class),
                     rs.getObject("alertTitle", java.lang.String.class),
                     rs.getObject("description", java.lang.String.class),
-                    rs.getObject("readStatus", java.lang.Boolean.class));
+                    edu.wpi.punchy_pegasi.schema.Alert.ReadStatus.valueOf(rs.getString("readStatus")));
                 add(req);
             }
         } catch (PdbController.DatabaseException | SQLException e) {

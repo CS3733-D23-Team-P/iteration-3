@@ -15,7 +15,12 @@ public class Alert {
     @com.jsoniter.annotation.JsonProperty("description")
     private String description;
     @com.jsoniter.annotation.JsonProperty("readstatus")
-    private Boolean readStatus;
+    private ReadStatus readStatus;
+
+    public enum ReadStatus {
+        READ,
+        UNREAD
+    }
 @lombok.RequiredArgsConstructor
 public enum Field implements IField<edu.wpi.punchy_pegasi.schema.Alert>{
         UUID("uuid"),
