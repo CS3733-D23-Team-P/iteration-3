@@ -248,9 +248,9 @@ public class App extends Application {
         splashController.setOnConnection(pdb -> Platform.runLater(() -> loadUI(pdb)));
         splashController.getConnection();
 
-//        var testComponent =
+//        var testComponent = new PFXAlertCard(1L);
 //        scene = new Scene(new BorderPane(new VBox(new HBox(testComponent))), 600, 400);
-//
+
 
         loadStylesheet("frontend/css/DefaultTheme.css");
 

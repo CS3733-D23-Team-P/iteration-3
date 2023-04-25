@@ -2,6 +2,7 @@ package edu.wpi.punchy_pegasi.frontend.controllers.requests;
 
 import edu.wpi.punchy_pegasi.App;
 import edu.wpi.punchy_pegasi.frontend.Screen;
+import edu.wpi.punchy_pegasi.frontend.components.PFXAlertCard;
 import edu.wpi.punchy_pegasi.frontend.components.PFXButton;
 import edu.wpi.punchy_pegasi.frontend.components.PFXCardHolder;
 import edu.wpi.punchy_pegasi.frontend.components.PFXCardVertical;
@@ -58,7 +59,8 @@ public class FoodServiceRequestController extends RequestController<FoodServiceR
         submit.setDisable(true);
         this.addPropertyChangeListener(this);
 
-        var flowPane = new FlowPane(card1, card2, card3, card4);
+        PFXAlertCard card5 = new PFXAlertCard(1L);
+        var flowPane = new FlowPane(card1, card2, card3, card4, card5);
         flowPane.setHgap(10);
         flowPane.setVgap(10);
         flowPane.setStyle("-fx-border-width: 0px; -fx-background-color: -pfx-background");
