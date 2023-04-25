@@ -1,18 +1,24 @@
 package edu.wpi.punchy_pegasi.schema;
 
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import edu.wpi.punchy_pegasi.backend.SchemaID;
+import edu.wpi.punchy_pegasi.backend.Unique;
+import lombok.*;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class Account {
-    
+    @SchemaID
+    @com.jsoniter.annotation.JsonProperty("uuid")
+    private Long uuid;
+    @Unique
+    @com.jsoniter.annotation.JsonProperty("username")
     private String username;
+    @com.jsoniter.annotation.JsonProperty("password")
     private String password;
+    @com.jsoniter.annotation.JsonProperty("employeeid")
     private Long employeeID;
+    @com.jsoniter.annotation.JsonProperty("accounttype")
     private AccountType accountType;
 
         @RequiredArgsConstructor
@@ -26,6 +32,7 @@ public class Account {
 
 @lombok.RequiredArgsConstructor
 public enum Field implements IField<edu.wpi.punchy_pegasi.schema.Account>{
+        UUID("uuid"),
         USERNAME("username"),
         PASSWORD("password"),
         EMPLOYEE_ID("employeeID"),
@@ -38,6 +45,7 @@ public enum Field implements IField<edu.wpi.punchy_pegasi.schema.Account>{
     }
     public Object getFromField(Field field) {
         return switch (field) {
+            case UUID -> getUuid();
             case USERNAME -> getUsername();
             case PASSWORD -> getPassword();
             case EMPLOYEE_ID -> getEmployeeID();

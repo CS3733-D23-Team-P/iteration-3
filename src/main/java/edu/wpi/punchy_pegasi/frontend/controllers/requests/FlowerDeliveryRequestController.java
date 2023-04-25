@@ -2,6 +2,7 @@ package edu.wpi.punchy_pegasi.frontend.controllers.requests;
 
 import edu.wpi.punchy_pegasi.App;
 import edu.wpi.punchy_pegasi.frontend.Screen;
+import edu.wpi.punchy_pegasi.frontend.components.PFXButton;
 import edu.wpi.punchy_pegasi.frontend.components.PFXCardHolder;
 import edu.wpi.punchy_pegasi.frontend.components.PFXCardVertical;
 import edu.wpi.punchy_pegasi.schema.FlowerDeliveryRequestEntry;
@@ -11,22 +12,24 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
 
+import javax.print.attribute.standard.ColorSupported;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 public class FlowerDeliveryRequestController extends RequestController<FlowerDeliveryRequestEntry> {
     TextField patientName = new TextField();
+    boolean filtered = false;
     @FXML
-    PFXCardHolder cardHolder;
-    @FXML
-    VBox container = new VBox();
-
-
+    private BorderPane root;
+    private VBox container;
+    ScrollPane scrollPane;
     public static BorderPane create(String path) {
         return RequestController.create(new FlowerDeliveryRequestController(), path);
     }
@@ -34,17 +37,26 @@ public class FlowerDeliveryRequestController extends RequestController<FlowerDel
     @FXML
     public void init() {
         addTextField(patientName);
-        submit.setDisable(true);
-        setHeaderText("Flower Delivery Request");
-        patientName.setOnKeyTyped(e -> validateEntry());
 
+
+        submit.setDisable(true);
         PFXCardVertical card1 = new PFXCardVertical("Daisy", "Beautiful flower", 20, new Image("edu/wpi/punchy_pegasi/frontend/assets/flower/daisy.jpg"));
         PFXCardVertical card2 = new PFXCardVertical("Lavendar", "Amazing smell!", 20, new Image("edu/wpi/punchy_pegasi/frontend/assets/flower/lavendar.jpg"));
         PFXCardVertical card3 = new PFXCardVertical("Red Rose", "Flower of love", 20, new Image("edu/wpi/punchy_pegasi/frontend/assets/flower/red-roses.jpg"));
         PFXCardVertical card4 = new PFXCardVertical("Sunflower", "Looks great!", 20, new Image("edu/wpi/punchy_pegasi/frontend/assets/flower/sunflower.jpg"));
-        cardHolder = new PFXCardHolder(new ArrayList<>(Arrays.asList(card1, card2, card3, card4)));
-        container.getChildren().add(cardHolder);
-        container.setAlignment(Pos.CENTER);
+        filter.setOnAction(e -> toggleFilter());
+
+        var flowPane = new FlowPane(card1, card2, card3, card4);
+        flowPane.setHgap(10);
+        flowPane.setVgap(10);
+        flowPane.setStyle("-fx-border-width: 0px; -fx-background-color: -pfx-background");
+        flowPane.setAlignment(Pos.CENTER_LEFT);
+        scrollPane = new ScrollPane(flowPane);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setFitToHeight(true);
+        scrollPane.setStyle("-fx-border-width: 0px; -fx-background-color: -pfx-background;");
+
+        root.setCenter(scrollPane);
     }
 
     @FXML
@@ -65,6 +77,23 @@ public class FlowerDeliveryRequestController extends RequestController<FlowerDel
     public void clearEntry() {
         clearGeneric();
         patientName.clear();
-        cardHolder.clear();
+//        cardHolder.clear();
+    }
+
+    @FXML
+    public void toggleFilter() {
+        if(filtered) {
+            filtered = false;
+//            filteredContainer.setManaged(true);
+//            filteredContainer.setVisible(true);
+            scrollPane.setManaged(false);
+            scrollPane.setVisible(false);
+        } else {
+            filtered = true;
+//            filteredContainer.setManaged(false);
+//            filteredContainer.setVisible(false);
+            scrollPane.setManaged(true);
+            scrollPane.setVisible(true);
+        }
     }
 }

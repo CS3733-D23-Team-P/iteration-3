@@ -1,6 +1,9 @@
 package edu.wpi.punchy_pegasi.frontend.controllers.requests;
 
 import edu.wpi.punchy_pegasi.App;
+import edu.wpi.punchy_pegasi.frontend.components.PFXButton;
+import edu.wpi.punchy_pegasi.frontend.components.PFXCardHolder;
+import edu.wpi.punchy_pegasi.frontend.components.PFXCardVertical;
 import edu.wpi.punchy_pegasi.generated.Facade;
 import edu.wpi.punchy_pegasi.schema.Employee;
 import edu.wpi.punchy_pegasi.schema.LocationName;
@@ -25,6 +28,11 @@ import lombok.extern.slf4j.Slf4j;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Comparator;
+
+import static edu.wpi.punchy_pegasi.frontend.utils.FacadeUtils.isDestination;
 
 @Slf4j
 public abstract class RequestController<T extends RequestEntry> {
@@ -40,21 +48,22 @@ public abstract class RequestController<T extends RequestEntry> {
     @FXML
     protected VBox inputContainer;
     @FXML
-    protected VBox requestInfoContainer;
+    VBox filterContainer = new VBox();
     @FXML
     protected Label headerText;
     @FXML
     MFXFilterComboBox<LocationName> locationName;
     @FXML
     MFXFilterComboBox<Employee> staffAssignment;
+    PFXButton filter = new PFXButton("Filter Category");
     @FXML
-    private HBox componentHolder;
+    PFXCardHolder cardHolder;
 
     public static BorderPane create(RequestController controller, String path) {
         try {
             Parent l = App.getSingleton().loadWithCache(path, controller).getRoot();
             BorderPane g = App.getSingleton().loadWithCache("frontend/layouts/Request.fxml", controller).getRoot();
-            controller.componentHolder.getChildren().add(l);
+            g.setCenter(l);
             return g;
         } catch (IOException e) {
             log.error("create error", e);
@@ -89,8 +98,9 @@ public abstract class RequestController<T extends RequestEntry> {
     @FXML
     protected final void initialize() {
         if (!isLoaded()) return;
-        locationName.setItems(FXCollections.observableArrayList(facade.getAllLocationName().values().stream().toList()));
-        staffAssignment.setItems(FXCollections.observableArrayList(facade.getAllEmployee().values().stream().toList()));
+//        componentHolder.getStyleClass().add("pfx-request-component-holder");
+        locationName.setItems(facade.getAllAsListLocationName().filtered(isDestination).sorted(Comparator.comparing(LocationName::getLongName)));
+        staffAssignment.setItems(facade.getAllAsListEmployee());
         locationName.setOnAction(p -> validateEntry());
         staffAssignment.setOnAction(p -> validateEntry());
         var employeeToName = new StringConverter<Employee>() {
@@ -150,39 +160,20 @@ public abstract class RequestController<T extends RequestEntry> {
 
     @FXML
     protected void addTextField(TextField field) {
-        HBox hbox = new HBox();
         Label label = new Label("Patient Name");
-        inputContainer.getChildren().add(0, hbox);
+        inputContainer.getChildren().add(0, field);
         inputContainer.getChildren().add(0, label);
-        hbox.getChildren().add(0, field);
-        hbox.setAlignment(Pos.CENTER);
-        label.setFont(new Font(DEFAULT_FONT, 24));
-        label.setAlignment(Pos.CENTER_LEFT);
-        label.setTextFill(Color.color(1, 1, 1));
         field.setPromptText("Enter Patient Name");
         field.setAlignment(Pos.CENTER_LEFT);
-        field.setFont(new Font(DEFAULT_FONT, 24));
-        inputContainer.setPadding(new Insets(20, 20, 20, 20));
-        inputContainer.setSpacing(6);
-        hbox.setPadding(new Insets(0, 0, 0, 0));
         field.setOnKeyTyped(a -> validateEntry());
     }
 
     @FXML
-    protected void addLabel(Label label) {
-        HBox hbox = new HBox();
-        Label total = new Label("Total:");
-        requestInfoContainer.getChildren().add(0, hbox);
-        hbox.getChildren().add(0, total);
-        hbox.getChildren().add(1, label);
-        hbox.setAlignment(Pos.CENTER);
-        hbox.setPadding(new Insets(10, 0, 0, 0));
-        label.setFont(new Font(DEFAULT_FONT, 24));
-        total.setFont(new Font(DEFAULT_FONT, 24));
-        total.setTextFill(Color.color(1, 1, 1));
-        label.setTextFill(Color.color(1, 1, 1));
-        hbox.setSpacing(150);
-        requestInfoContainer.setManaged(true);
-        requestInfoContainer.setVisible(true);
+    protected VBox addFilter(ArrayList<PFXCardVertical> cards, String filterName) {
+        filterContainer.setAlignment(Pos.TOP_LEFT);
+        cardHolder = new PFXCardHolder(cards, filterName);
+        filterContainer.getChildren().add(cardHolder);
+        filterContainer.setPadding(new Insets(10, 10, 10, 23));
+        return filterContainer;
     }
 }

@@ -49,10 +49,13 @@ dependencies {
             'com.oracle.database.jdbc:ojdbc8:21.9.0.0',
 
             'com.impossibl.pgjdbc-ng:pgjdbc-ng:0.8.9',
+            'com.jsoniter:jsoniter:0.9.23',
 
             'de.mkammerer:argon2-jvm:2.11',
             'com.github.hervegirod:fxsvgimage:1.1',
             'net.java.dev.jna:jna:5.12.1',
+
+            'com.fazecast:jSerialComm:[2.0.0,3.0.0)'
 
     )
     implementation project(path: ':generator')
