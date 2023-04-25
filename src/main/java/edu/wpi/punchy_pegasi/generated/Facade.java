@@ -20,6 +20,7 @@ public class Facade {
 	private final EmployeeDaoImpl employeeDao;
 	private final AccountDaoImpl accountDao;
 	private final SignageDaoImpl signageDao;
+	private final AlertDaoImpl alertDao;
 
     public Facade(PdbController dbController) {
 		nodeDao = new NodeDaoImpl(dbController);
@@ -35,6 +36,7 @@ public class Facade {
 		employeeDao = new EmployeeDaoImpl(dbController);
 		accountDao = new AccountDaoImpl(dbController);
 		signageDao = new SignageDaoImpl(dbController);
+		alertDao = new AlertDaoImpl(dbController);
 
     }
 
@@ -310,5 +312,26 @@ public class Facade {
 	}
 	public void deleteSignage(Signage signage) {
 		signageDao.delete(signage);
+	}
+	public Optional<Alert> getAlert(java.lang.Long key) {
+		return alertDao.get(key);
+	}
+	public Map<java.lang.Long, Alert> getAlert(Alert.Field column, Object value) {
+		return alertDao.get(column, value);
+	}
+	public Map<java.lang.Long, Alert> getAlert(Alert.Field[] params, Object[] value) {
+		return alertDao.get(params, value);
+	}
+	public Map<java.lang.Long, Alert> getAllAlert() {
+		return alertDao.getAll();
+	}
+	public void saveAlert(Alert alert) {
+		alertDao.save(alert);
+	}
+	public void updateAlert(Alert alert, Alert.Field[] params) {
+		alertDao.update(alert, params);
+	}
+	public void deleteAlert(Alert alert) {
+		alertDao.delete(alert);
 	}
 }

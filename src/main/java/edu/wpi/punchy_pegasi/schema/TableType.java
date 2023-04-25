@@ -165,7 +165,23 @@ CREATE TABLE IF NOT EXISTS signage
   directionType varchar NOT NULL
 );
 """, edu.wpi.punchy_pegasi.schema.Signage.Field.class)
-;
+,
+    ALERTS(edu.wpi.punchy_pegasi.schema.Alert.class, """
+DO $$
+BEGIN
+  IF to_regclass('alerts') IS NULL THEN
+    CREATE SEQUENCE alerts_id_seq;
+    CREATE TABLE alerts
+    (
+      uuid bigint DEFAULT nextval('alerts_id_seq') PRIMARY KEY,
+      alertTitle varchar,
+      description varchar,
+      readStatus null
+    );
+    ALTER SEQUENCE alerts_id_seq OWNED BY alerts.uuid;
+  END IF;
+END $$;
+""", edu.wpi.punchy_pegasi.schema.Alert.Field.class);
     @Getter
     private final Class<?> clazz;
     @Getter
