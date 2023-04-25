@@ -1,5 +1,7 @@
 package edu.wpi.punchy_pegasi.frontend.components;
 
+import edu.wpi.punchy_pegasi.App;
+import edu.wpi.punchy_pegasi.schema.Alert;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Label;
@@ -7,18 +9,46 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
+import java.util.Map;
+import java.util.Optional;
+
 public class PFXAlertCard extends VBox {
     private final PFXButton read;
     private final Label titleLabel;
     private final Label description;
     private boolean isRead;
+    private Long uuid;
 
-    public PFXAlertCard() {
+    public PFXAlertCard(Long uuid) {
         super();
-        titleLabel = new Label("Alert Name");
-        description = new Label("A very informative description");
+        //service request or move based on what
+            //Service Request
+            //Move
+        titleLabel = new Label("");
+        //titleLabelS = new Label("Service Request");
+        //what you assigned to or when the move is happening / what unit
+            //You have been assigned to
+            //The -unit- is moving -when-
+        description = new Label("");
         read = new PFXButton("Mark read");
         isRead = false;
+
+        Optional<Alert> la = App.getSingleton().getFacade().getAlert(uuid);
+
+        Alert alert = la.get();
+        Long longa = alert.getUuid();
+        String stringa = alert.getDescription();
+
+
+
+        //if this is service
+            //if this is going here then
+
+
+        //if this is move
+            //if this is going here then
+
+
 
         getStyleClass().add("pfx-alert-card-container-unread");
         getChildren().addAll(titleLabel, description, read);
