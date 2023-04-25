@@ -1,6 +1,8 @@
 package edu.wpi.punchy_pegasi.frontend.components;
 
 import edu.wpi.punchy_pegasi.App;
+import edu.wpi.punchy_pegasi.frontend.icons.MaterialSymbols;
+import edu.wpi.punchy_pegasi.frontend.icons.PFXIcon;
 import edu.wpi.punchy_pegasi.schema.Alert;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -12,36 +14,36 @@ import javafx.scene.layout.VBox;
 import java.util.Map;
 import java.util.Optional;
 
-public class PFXAlertCard extends VBox {
+public class PFXAlertCard extends HBox {
     private final PFXButton read;
     private final Label titleLabel;
     private final Label description;
     private boolean isRead;
     private Long uuid;
+    private VBox textContainer = new VBox();
 
     public PFXAlertCard(Long uuid) {
         super();
         Optional<Alert> la = App.getSingleton().getFacade().getAlert(uuid);
         Alert alert = la.get();
-        Long longa = alert.getUuid();
-        //service request or move based on what
-        //Service Request
-        //Move
+        Alert.ReadStatus readStatus = alert.getReadStatus();
+        if(readStatus == Alert.ReadStatus.READ) {
+            isRead = true;
+            getStyleClass().add("pfx-alert-card-container-read");
+        } else {
+            isRead = false;
+            getStyleClass().add("pfx-alert-card-container-unread");
+        }
         titleLabel = new Label(alert.getAlertTitle());
-        //titleLabelS = new Label("Service Request");
-        //what you assigned to or when the move is happening / what unit
-            //You have been assigned to
-            //The -unit- is moving -when-
         description = new Label(alert.getDescription());
-        read = new PFXButton("Mark Read");
-        isRead = false;
+        read = new PFXButton("", new PFXIcon(MaterialSymbols.NOTIFICATIONS));
 
-        getStyleClass().add("pfx-alert-card-container-unread");
-        getChildren().addAll(titleLabel, description, read);
+
+        getChildren().addAll(textContainer, read);
+        textContainer.getChildren().addAll(titleLabel, description);
         HBox.setHgrow(read, Priority.ALWAYS);
         HBox.setHgrow(description, Priority.ALWAYS);
         read.setOnAction(e -> toggleRead());
-
     }
 
     public PFXAlertCard(String title, String description, boolean isRead) {
@@ -68,14 +70,13 @@ public class PFXAlertCard extends VBox {
 
     public void toggleRead() {
         isRead = !isRead;
-        if(isRead == true) {
-            read.setText("Mark unread");
-            read.getStyleClass().add("pfx-alert-card-read");
+        if(isRead) {
+            getStyleClass().remove("pfx-alert-card-container-unread");
             getStyleClass().add("pfx-alert-card-container-read");
         }
         else{
-            read.setText("Mark read");
             getStyleClass().remove("pfx-alert-card-container-read");
+            getStyleClass().add("pfx-alert-card-container-unread");
         }
     }
 }
