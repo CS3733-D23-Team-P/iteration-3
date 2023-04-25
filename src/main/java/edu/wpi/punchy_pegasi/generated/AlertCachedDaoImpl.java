@@ -6,40 +6,69 @@ import edu.wpi.punchy_pegasi.schema.Alert;
 import edu.wpi.punchy_pegasi.schema.IDao;
 import edu.wpi.punchy_pegasi.schema.TableType;
 import javafx.collections.FXCollections;
+import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import lombok.extern.slf4j.Slf4j;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
-public class AlertDaoImpl implements IDao<java.lang.Long, Alert, Alert.Field> {
+public class AlertCachedDaoImpl implements IDao<java.lang.Long, Alert, Alert.Field>, PropertyChangeListener {
 
     static String[] fields = {"uuid", "alertTitle", "description", "readStatus"};
+
+    private final ObservableMap<java.lang.Long, Alert> cache = FXCollections.observableMap(new LinkedHashMap<>());
+    private final ObservableList<Alert> list = FXCollections.observableArrayList();
     private final PdbController dbController;
 
-    public AlertDaoImpl(PdbController dbController) {
+    public AlertCachedDaoImpl(PdbController dbController) {
         this.dbController = dbController;
+        cache.addListener((MapChangeListener<java.lang.Long, Alert>) c -> {
+            if (c.wasRemoved()) {
+                list.remove(c.getValueRemoved());
+            } else if (c.wasAdded()) {
+                list.add(c.getValueAdded());
+            }
+        });
+        initCache();
+        this.dbController.addPropertyChangeListener(this);
     }
 
-    @Override
-    public Optional<Alert> get(java.lang.Long key) {
-        try (var rs = dbController.searchQuery(TableType.ALERTS, "uuid", key)) {
-            rs.next();
-            Alert req = new Alert(
+    public void add(Alert alert) {
+        if (!cache.containsKey(alert.getUuid()))
+            cache.put(alert.getUuid(), alert);
+    }
+
+    public void update(Alert alert) {
+        cache.put(alert.getUuid(), alert);
+    }
+
+    public void remove(Alert alert) {
+        cache.remove(alert.getUuid());
+    }
+
+    private void initCache() {
+        try (var rs = dbController.searchQuery(TableType.ALERTS)) {
+            while (rs.next()) {
+                Alert req = new Alert(
                     rs.getObject("uuid", java.lang.Long.class),
                     rs.getObject("alertTitle", java.lang.String.class),
                     rs.getObject("description", java.lang.String.class),
                     rs.getObject("readStatus", java.lang.Boolean.class));
-            return Optional.ofNullable(req);
+                add(req);
+            }
         } catch (PdbController.DatabaseException | SQLException e) {
             log.error("", e);
-            return Optional.empty();
         }
+    }
+
+    @Override
+    public Optional<Alert> get(java.lang.Long key) {
+        return Optional.ofNullable(cache.get(key));
     }
 
     @Override
@@ -50,44 +79,25 @@ public class AlertDaoImpl implements IDao<java.lang.Long, Alert, Alert.Field> {
     @Override
     public Map<java.lang.Long, Alert> get(Alert.Field[] params, Object[] value) {
         var map = new HashMap<java.lang.Long, Alert>();
-        try (var rs = dbController.searchQuery(TableType.ALERTS, Arrays.stream(params).map(Alert.Field::getColName).toList().toArray(new String[params.length]), value)) {
-            while (rs.next()) {
-                Alert req = new Alert(
-                    rs.getObject("uuid", java.lang.Long.class),
-                    rs.getObject("alertTitle", java.lang.String.class),
-                    rs.getObject("description", java.lang.String.class),
-                    rs.getObject("readStatus", java.lang.Boolean.class));
-                if (req != null)
-                    map.put(req.getUuid(), req);
-            }
-        } catch (PdbController.DatabaseException | SQLException e) {
-            log.error("", e);
-        }
+        if (params.length != value.length) return map;
+        cache.values().forEach(v -> {
+            var include = true;
+            for (int i = 0; i < params.length; i++)
+                include &= Objects.equals(params[i].getValue(v), value[i]);
+            if (include)
+                map.put(v.getUuid(), v);
+        });
         return map;
     }
 
     @Override
     public ObservableMap<java.lang.Long, Alert> getAll() {
-        var map = new HashMap<java.lang.Long, Alert>();
-        try (var rs = dbController.searchQuery(TableType.ALERTS)) {
-            while (rs.next()) {
-                Alert req = new Alert(
-                    rs.getObject("uuid", java.lang.Long.class),
-                    rs.getObject("alertTitle", java.lang.String.class),
-                    rs.getObject("description", java.lang.String.class),
-                    rs.getObject("readStatus", java.lang.Boolean.class));
-                if (req != null)
-                    map.put(req.getUuid(), req);
-            }
-        } catch (PdbController.DatabaseException | SQLException e) {
-            log.error("", e);
-        }
-        return FXCollections.observableMap(map);
+        return cache;
     }
 
     @Override
     public ObservableList<Alert> getAllAsList() {
-        return FXCollections.observableList(getAll().values().stream().toList());
+        return list;
     }
 
     @Override
@@ -95,10 +105,10 @@ public class AlertDaoImpl implements IDao<java.lang.Long, Alert, Alert.Field> {
         Object[] values = {alert.getUuid(), alert.getAlertTitle(), alert.getDescription(), alert.getReadStatus()};
         try {
             dbController.insertQuery(TableType.ALERTS, fields, values);
+//            add(alert);
         } catch (PdbController.DatabaseException e) {
             log.error("Error saving", e);
         }
-
     }
 
     @Override
@@ -107,6 +117,7 @@ public class AlertDaoImpl implements IDao<java.lang.Long, Alert, Alert.Field> {
             return;
         try {
             dbController.updateQuery(TableType.ALERTS, "uuid", alert.getUuid(), Arrays.stream(params).map(Alert.Field::getColName).toList().toArray(new String[params.length]), Arrays.stream(params).map(p -> p.getValue(alert)).toArray());
+//            update(alert);
         } catch (PdbController.DatabaseException e) {
             log.error("Error saving", e);
         }
@@ -116,8 +127,22 @@ public class AlertDaoImpl implements IDao<java.lang.Long, Alert, Alert.Field> {
     public void delete(Alert alert) {
         try {
             dbController.deleteQuery(TableType.ALERTS, "uuid", alert.getUuid());
+//            remove(alert);
         } catch (PdbController.DatabaseException e) {
             log.error("Error deleting", e);
+        }
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (Objects.equals(evt.getPropertyName(), TableType.ALERTS.name() + "_update")) {
+            var update = (PdbController.DatabaseChangeEvent) evt.getNewValue();
+            var data = (Alert) update.data();
+            switch (update.action()) {
+                case UPDATE -> update(data);
+                case DELETE -> remove(data);
+                case INSERT -> add(data);
+            }
         }
     }
 }

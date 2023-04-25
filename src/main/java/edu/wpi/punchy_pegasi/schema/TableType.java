@@ -488,7 +488,45 @@ CREATE OR REPLACE TRIGGER trigger_signage_update
   FOR EACH ROW
   EXECUTE PROCEDURE notify_signage_update();
 
-""", edu.wpi.punchy_pegasi.schema.Signage.Field.class);
+""", edu.wpi.punchy_pegasi.schema.Signage.Field.class),
+    ALERTS(edu.wpi.punchy_pegasi.schema.Alert.class, """
+DO $$
+BEGIN
+  IF to_regclass('alerts') IS NULL THEN
+    CREATE SEQUENCE alerts_id_seq;
+    CREATE TABLE alerts
+    (
+      uuid bigint DEFAULT nextval('alerts_id_seq') PRIMARY KEY,
+      alertTitle varchar,
+      description varchar,
+      readStatus null
+    );
+    ALTER SEQUENCE alerts_id_seq OWNED BY alerts.uuid;
+  END IF;
+END $$;
+CREATE OR REPLACE FUNCTION notify_alerts_update() RETURNS TRIGGER AS $$
+    DECLARE
+        row RECORD;
+    output JSONB;
+    BEGIN
+    IF (TG_OP = 'DELETE') THEN
+      row = OLD;
+    ELSE
+      row = NEW;
+    END IF;
+    -- encode data as json inside a string
+    output = jsonb_build_object('tableType', 'ALERTS', 'action', TG_OP, 'data', to_json(row_to_json(row)::text));
+    PERFORM pg_notify('alerts_update',output::text);
+    RETURN NULL;
+    END;
+$$ LANGUAGE plpgsql;
+CREATE OR REPLACE TRIGGER trigger_alerts_update
+  AFTER INSERT OR UPDATE OR DELETE
+  ON alerts
+  FOR EACH ROW
+  EXECUTE PROCEDURE notify_alerts_update();
+
+""", edu.wpi.punchy_pegasi.schema.Alert.Field.class);
     @Getter
     private final Class<?> clazz;
     @Getter
